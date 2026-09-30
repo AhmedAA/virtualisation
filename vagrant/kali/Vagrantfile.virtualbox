@@ -1,0 +1,64 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "kalilinux/rolling"
+  # config.vm.hostname = "kali"
+  config.vm.define "excalibur"
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  # NOTE: This will enable public access to the opened port
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 9001, host: 9001
+  config.vm.network "forwarded_port", guest: 9002, host: 9002
+  config.vm.network "forwarded_port", guest: 9003, host: 9003
+  config.vm.network "forwarded_port", guest: 9004, host: 9004
+  config.vm.network "forwarded_port", guest: 9005, host: 9005
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine and only allow access
+  # via 127.0.0.1 to disable public access
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP.
+  # config.vm.network "private_network", ip: "192.168.33.10"
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network.
+  #config.vm.network "public_network"
+
+  # config.vm.synced_folder "source", "target"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "excalibur"
+
+    # Display the VirtualBox GUI when booting the machine
+    # Change to true if GUI tools are required
+    # Recommended: You can open GUI from within the Virtualbox program. This way
+    # you do not have to change this variable. Only change it if you want to
+    # boot in GUI always. To start single applications with GUI you can do:
+    # vagrant ssh -- -X wireshark
+    # which will X forward wireshark to our host machine. No need for launching
+    # the UI through Virtualbox. Almost seamless :)
+    vb.gui = true
+
+    # Customise the amount of memory on the VM:
+    vb.memory = "16384"
+
+    # Customise the CPUs on the VM:
+    vb.cpus = 4
+  end
+
+  # Run provision script
+  # Do not provision from here. It will not work.
+  # Instead, after the machine has been provisioned, ssh into it
+  # (or use the GUI), change user to root and then run the script.
+
+  #config.vm.provision "shell", path: "bootstrap.sh"
+  config.vm.provision "shell",
+                      inline: "/bin/bash /vagrant/bootstrap.sh"
+end

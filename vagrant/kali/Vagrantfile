@@ -1,0 +1,66 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "kalilinux/rolling"
+  # config.vm.hostname = "kali"
+  config.vm.define "kali"
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  # NOTE: This will enable public access to the opened port
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  #config.vm.network "forwarded_port", guest: 3306, host: 3306
+  config.vm.network "forwarded_port", guest: 8888, host: 8888
+  config.vm.network "forwarded_port", guest: 9001, host: 9001
+  config.vm.network "forwarded_port", guest: 9002, host: 9002
+  config.vm.network "forwarded_port", guest: 9003, host: 9003
+  config.vm.network "forwarded_port", guest: 9004, host: 9004
+  config.vm.network "forwarded_port", guest: 9005, host: 9005
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine and only allow access
+  # via 127.0.0.1 to disable public access
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP.
+  # config.vm.network "private_network", ip: "192.168.33.10"
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network.
+  #config.vm.network :public_network,
+  #                  :dev => "enp0s31f6",
+  #                  :mode => "bridge",
+  #                  :type => "bridge"
+
+  # config.vm.synced_folder "source", "target", type: "9p", disabled: false, accessmode: "mapped"
+  config.vm.synced_folder ".", "/vagrant", type: "9p", disabled: false, accessmode: "mapped"
+
+  config.vm.provider "libvirt" do |libvirt|
+    libvirt.channel :type => "spicevmc", :target_name => "com.redhat.spice.0", :target_type => "virtio"
+    libvirt.uri = "qemu+unix:///system"
+    libvirt.default_prefix = "excalibur_"
+    libvirt.storage_pool_name = "vms"
+    libvirt.machine_arch = "x86_64"
+    libvirt.driver = "kvm"
+    libvirt.kvm_hidden = true
+    # GPU passthrough
+    #libvirt.pci :bus => "0x01", :slot => "0x00", :function => "0x0"
+    libvirt.video_type = "qxl"
+    libvirt.graphics_type = "spice"
+    libvirt.cpus = 4
+    libvirt.cpu_mode = "host-passthrough"
+    libvirt.memory = "16384"
+    libvirt.nested = true
+    libvirt.suspend_mode = "managedsave"
+  end
+
+  # Run provision script
+  #config.vm.provision "shell", path: "bootstrap.sh"
+  config.vm.provision "shell",
+                      inline: "/bin/bash /vagrant/bootstrap.sh"
+
+end

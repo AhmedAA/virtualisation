@@ -1,0 +1,13 @@
+{
+  "theme": "dark",
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 8192,
+    "keepRecentTokens": 8192
+  },
+  "packages": [
+    {
+      "source": "/home/pi/.config/nono/packages/nolabs-ai/pi"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+FROM debian:testing-slim
+
+ENV TZ="Europe/Copenhagen"
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Corrected package names for Debian testing repositories
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    git \
+    sudo \
+    nano \
+    curl \
+    wget \
+    fzf \
+    bat \
+    httpie \
+    zoxide \
+    fd-find \
+    ripgrep \
+    atool \
+    ranger \
+    ueberzug \
+    starship \
+    zsh \
+    gpg \
+    eza \
+    adduser \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create user and set working directory
+RUN adduser --disabled-password --gecos '' pi && \
+    chown -R pi:pi /home/pi && \
+    adduser pi sudo && \
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+RUN bash <<'EOF'
+    set -e
+    VERSION=$(curl -sIL https://github.com/nolabs-ai/nono/releases/latest | grep -i location | grep -oP 'v\K[0-9a-zA-Z.-]+')
+    ARCH=$(dpkg --print-architecture)
+    wget -q https://github.com/nolabs-ai/nono/releases/download/v${VERSION}/nono-cli_${VERSION}_${ARCH}.deb
+    dpkg -i nono-cli_${VERSION}_${ARCH}.deb
+    rm nono-cli_${VERSION}_${ARCH}.deb
+EOF
+
+RUN su - pi -c "\
+    curl -o /tmp/zsh-install.sh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && \
+    chmod 744 /tmp/zsh-install.sh && \
+    sh /tmp/zsh-install.sh --unattended"
+
+# Switch to pi user and install Oh My Zsh plugins
+RUN su - pi -c "\
+    mkdir -p /home/pi/.oh-my-zsh/custom/plugins && \
+    git clone https://github.com/zsh-users/zsh-autosuggestions /home/pi/.oh-my-zsh/custom/plugins/zsh-autosuggestions && \
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting /home/pi/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
+    git clone https://github.com/zsh-users/zsh-completions /home/pi/.oh-my-zsh/custom/plugins/zsh-completions && \
+    git clone https://github.com/lukechilds/zsh-nvm /home/pi/.oh-my-zsh/custom/plugins/zsh-nvm" || true
+
+RUN su - pi -c "\
+    curl -o /tmp/rustup.sh https://sh.rustup.rs && chmod 744 /tmp/rustup.sh && sh /tmp/rustup.sh -y && \
+    curl -o /tmp/cargo-binstall.sh https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh && \
+    chmod 744 /tmp/cargo-binstall.sh && sh /tmp/cargo-binstall.sh && \
+    /home/pi/.cargo/bin/cargo-binstall zellij && \
+    /home/pi/.cargo/bin/cargo-binstall --git https://github.com/rtk-ai/rtk rtk"
+
+RUN apt-get autoremove && apt-get autoclean && apt-get clean && rm -rf /var/lib/apt/lists /tmp/*
+
+USER pi
+WORKDIR /home/pi
+
+RUN /bin/zsh -c "source /home/pi/.oh-my-zsh/custom/plugins/zsh-nvm/zsh-nvm.plugin.zsh && \
+    nvm install --lts && \
+    npm install -g @ast-grep/cli && \
+    npm install -g ketch-cli && \
+    curl -fsSL https://pi.dev/install.sh | sh && \
+    "
+
+COPY --chown=pi:pi /config/shell/zshrc .zshrc
+COPY --chown=pi:pi /config/pi/agent .pi/agent
+COPY --chown=pi:pi /config/nono/profiles/pi.json .config/nono/profiles/pi.json
+
+USER pi
+RUN /bin/zsh -c "\
+    rtk init -g --agent pi && \
+    nono pull nolabs-ai/pi && \
+    source /home/pi/.oh-my-zsh/custom/plugins/zsh-nvm/zsh-nvm.plugin.zsh && \
+    /home/pi/.pi/agent/bin/pi install git:github.com/nicobailon/pi-web-access && \
+    "
+
+RUN rm -rf /home/pi/.zcompdump* \
+    /home/pi/.zsh_history \
+    /home/pi/.bashrc \
+    /home/pi/.bash_logout \
+    /home/pi/.cache \
+    /home/pi/.cargo/registry \
+    /home/pi/.npm/_cacache \
+    /home/pi/.nvm/cache
+
+ENTRYPOINT [ "/bin/zsh" ]

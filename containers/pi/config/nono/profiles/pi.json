@@ -1,0 +1,45 @@
+{
+  "extends": [
+    "nolabs-ai/pi"
+  ],
+  "meta": {
+    "name": "pi"
+  },
+  "filesystem": {
+    "allow": [
+      "~/.pi",
+      "/tmp/jiti"
+    ],
+    "read": [
+      "~/.cargo/bin/rtk",
+      "/home/pi/.nvm/versions/node/v24.21.0/bin/ast-grep",
+      "/home/pi/.nvm/versions/node/v24.21.0/bin/ketch"
+    ],
+    "write": [],
+    "allow_file": [],
+    "read_file": [],
+    "write_file": []
+  },
+  "network": {
+    "block": false,
+    "allow_http2": false,
+    "allow_domain": [
+      "127.0.0.1",
+      "github.com",
+      "*.github.com",
+      "gitlab.com",
+      "*.gitlab.com",
+      "api.exa.ai"
+    ],
+    "connect_port": [
+      11434,
+      11435,
+      443,
+      80
+    ],
+    "no_proxy": []
+  },
+  "workdir": {
+    "access": "readwrite"
+  }
+}

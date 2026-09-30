@@ -1,0 +1,22 @@
+{
+  "name": "pi-file-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "npm run build && node --import tsx --test test/*.test.ts",
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "yaml": "^2.8.1",
+    "@earendil-works/pi-coding-agent": "0.87.1",
+    "@earendil-works/pi-tui": "0.87.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,79 @@
+export ZSH=/home/$USER/.oh-my-zsh
+ZSH_THEME="spaceship"
+
+## Spaceship customisation
+SPACESHIP_PROMPT_ORDER=(
+dir             # Current directory section
+user            # Username section
+host            # Hostname section
+git             # Git section (git_branch + git_status)
+time            # Time stamps section
+# hg            # Mercurial section (hg_branch  + hg_status)
+# package       # Package version
+node          # Node.js section
+ruby          # Ruby section
+# elixir        # Elixir section
+# xcode         # Xcode section
+# swift         # Swift section
+golang        # Go section
+php           # PHP section
+rust          # Rust section
+# haskell       # Haskell Stack section
+# julia         # Julia section
+docker        # Docker section
+# aws           # Amazon Web Services section
+venv          # virtualenv section
+conda         # conda virtualenv section
+pyenv         # Pyenv section
+# dotnet        # .NET section
+# ember         # Ember.js section
+# kubecontext   # Kubectl context section
+exec_time       # Execution time
+line_sep        # Line break
+battery         # Battery level and status
+vi_mode         # Vi-mode indicator
+jobs            # Background jobs indicator
+# exit_code     # Exit code section
+char            # Prompt character
+)
+
+SPACESHIP_BATTERY_THRESHOLD=25
+
+SPACESHIP_PROMPT_FIRST_PREFIX_SHOW=true # Show prefix before first line in prompt
+SPACESHIP_DIR_PREFIX="┌─[%b "
+SPACESHIP_DIR_SUFFIX=" ] "
+SPACESHIP_CHAR_SYMBOL="└─▪%b "
+
+plugins=(
+         autojump
+         docker
+         docker-compose
+         tmux
+         fzf
+         zsh-z
+         git
+         colored-man-pages
+         history-substring-search
+         zsh-autosuggestions
+         zsh-completions
+         zsh-syntax-highlighting
+         )
+
+autoload -U compinit && compinit # reload completions for zsh-completions
+
+source $ZSH/oh-my-zsh.sh
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export GOPATH=$HOME/go
+export GO111MODULE=on
+export PATH=/opt/tools/bin:$HOME/.npm/bin:$GOPATH/bin:$HOME/.cargo/bin:$PATH
+
+source /opt/.zsh_aliases
+source /usr/share/doc/fzf/examples/key-bindings.zsh
+source /usr/share/doc/fzf/examples/completion.zsh
+
+# Colorize autosuggest
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=4'

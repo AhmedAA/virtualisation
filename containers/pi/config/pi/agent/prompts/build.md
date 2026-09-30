@@ -1,0 +1,3 @@
+Resume or implement the approved coding task: $ARGUMENTS
+
+Follow the plan-first skill. First read project-root `TODO.md`, `HANDOVER.md`, and `AGENTS.md` (if present). If the initial plan lacks approval, request it before coding. Resume the first unfinished task using the handover's next action; check partial work before repeating it. Do one task at a time: checkpoint intent, implement, verify, mark `[x]` only on success, then checkpoint results and the next exact action. Record newly discovered in-scope tasks and continue; ask approval only for expanded scope, materially greater risk, or changed requirements. Update both files before ending or when blocked/context is low. Keep them on completion.

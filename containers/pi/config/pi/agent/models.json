@@ -1,0 +1,30 @@
+{
+  "providers": {
+    "llamacpp-engineering": {
+      "baseUrl": "http://127.0.0.1:11434/v1",
+      "api": "openai-completions",
+      "apiKey": "sk-dummy",
+      "models": [
+        {
+          "id": "qwen3.5",
+          "name": "Qwen 3.5 9B Instruct",
+          "contextWindow": 32768,
+          "maxTokens": 8192
+        }
+      ]
+    },
+    "llamacpp-knowledge-base": {
+      "baseUrl": "http://127.0.0.1:11435/v1",
+      "api": "openai-completions",
+      "apiKey": "sk-dummy",
+      "models": [
+        {
+          "id": "ministral",
+          "name": "Ministral 3 8B Instruct",
+          "contextWindow": 32768,
+          "maxTokens": 8192
+        }
+      ]
+    }
+  }
+}
