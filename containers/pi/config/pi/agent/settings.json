@@ -1,5 +1,5 @@
 {
-  "theme": "dark",
+  "theme": "catppuccin-macchiato",
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
