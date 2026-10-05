@@ -29,7 +29,10 @@
       "*.github.com",
       "gitlab.com",
       "*.gitlab.com",
-      "api.exa.ai"
+      "api.exa.ai",
+      "html.duckduckgo.com",
+      "mcp.grep.app",
+      "sourcegraph.com"
     ],
     "connect_port": [
       11434,
