@@ -1,5 +1,6 @@
 {
   "theme": "catppuccin-macchiato",
+  "defaultTools": ["+codemode"],
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
