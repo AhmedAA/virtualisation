@@ -83,6 +83,7 @@ RUN /bin/zsh -c "\
     nono pull nolabs-ai/pi && \
     source /home/pi/.oh-my-zsh/custom/plugins/zsh-nvm/zsh-nvm.plugin.zsh && \
     /home/pi/.pi/agent/bin/pi install git:github.com/nicobailon/pi-web-access && \
+    /home/pi/.pi/agent/bin/pi install git:github.com/nicobailon/pi-subagents && \
     "
 
 RUN rm -rf /home/pi/.zcompdump* \
