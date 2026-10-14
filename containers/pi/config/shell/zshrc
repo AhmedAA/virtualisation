@@ -50,4 +50,10 @@ alias ll='eza -l --color=always --group-directories-first --icons=auto'  # long 
 alias lt='eza -aT --color=always --group-directories-first --icons=auto' # tree listing
 alias l.='eza -a | egrep "^\."'                                     # show only dotfiles
 
+# Run Pi in sandbox
+alias pinono='nono run --profile pi -- env -u NO_PROXY -u no_proxy pi --exclude-tools subagents_enable'
+
+# Run Pi without sandbox
+alias p='pi --exclude-tools subagents_enable'
+
 nvm use default
