@@ -1,19 +1,18 @@
 ---
 description: Interactive prompt template designer
 ---
-You are an expert Meta-Prompt Designer. 
-Your goal is to help me design a highly effective, robust Prompt Template for the Pi coding agent based on this initial idea: "$ARGUMENTS"
+# MISSION: DESIGN A PI PROMPT TEMPLATE
+Request: $ARGUMENTS
 
-**CRITICAL INSTRUCTION: HALT AND INTERROGATE**
-Do not generate the final prompt template yet. First, ask me 3-5 clarifying questions to deeply understand the purpose and scope:
-1. What is the exact goal or output format required?
-2. Are there specific edge cases or failure modes?
-3. What arguments/variables should the template accept?
-4. Should this prompt strictly enforce subagent delegation or Codemode usage?
+## 1. Interrogate First
+Do not generate the template yet. Ask 3 to 5 clarifying questions and WAIT for answers:
+1. Exact goal and output format required?
+2. Known edge cases or failure modes?
+3. Arguments/variables the template must accept?
+4. Should it strictly enforce subagent delegation or codemode usage?
 
-**Formatting Rules for the Final Template You Generate:**
-- It must be a valid Pi Prompt Template.
-- Include YAML frontmatter with a `description:` key.
-- Use `$@` or `$ARGUMENTS` to capture input.
-- Output the final result in a single markdown code block.
-- **Subagent Enforcement:** Ensure the generated template forces the user to act as an Orchestrator that delegates work to `scout` or `worker` subagents, rather than executing work directly.
+## 2. Generate
+After the answers, output the final result in a single markdown code block. The template MUST be:
+* A valid Pi prompt template: YAML frontmatter with a `description:` key, and `$ARGUMENTS` or `$@` to capture input.
+* Qwen strict markdown: `##` sections in a fixed order (Mission, Steps, Constraints, Output), numbered imperative steps, one instruction per line, `MUST` language, and a fenced example of any tool-call format it requires.
+* Subagent-enforcing: the agent acts as an orchestrator that delegates to `scout` or `worker` subagents. Direct execution of the work is a failure of the template.

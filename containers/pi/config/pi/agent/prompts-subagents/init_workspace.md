@@ -1,28 +1,38 @@
-# MISSION
-You are a Workspace Initialization Scout. Your task is to analyze the current directory, determine the technology stack and domain, research current best practices, and generate a strict configuration file.
+# MISSION: WORKSPACE INITIALIZATION
 
-# INSTRUCTIONS
-1. **Investigate:** Use terminal tools to look for configuration files.
-2. **Assess & Research:**
-   - If empty, DO NOT generate the file. Ask for details.
-   - If the stack is clear, you MUST use your web search tool. **CRITICAL:** You are sandboxed. You may ONLY search against `api.exa.ai`, `html.duckduckgo.com`, `mcp.grep.app`, or `sourcegraph.com`.
-3. **Generate:** Create `.pi/AGENTS.md` using exactly the template below. 
+Analyze the current directory, determine the technology stack, and generate `.pi/AGENTS.md`.
 
-# TEMPLATE FOR .pi/AGENTS.md
+## 1. Investigate
+Run, through `rtk`:
+```
+rtk fd -d 2
+rtk fd -d 2 -g '*.{json,toml,yaml,lock}'
+```
+
+## 2. Decide
+* Directory empty → generate nothing. Ask the operator for the intended stack and purpose, then stop.
+* Stack unclear → ask, then stop.
+* Stack clear → research current best practices with `ketch` (primary) or `web_search` (fallback), restricted to the allowlisted domains.
+
+## 3. Generate `.pi/AGENTS.md`
+Use exactly the structure below. Replace each `{placeholder}` with concrete, verified content. Every constraint MUST come from evidence in the repo or from a research result – never invent one. Example of a filled constraint: `Tests run with \`bun test\`; do not modify files under dist/`.
+
 ```markdown
-# [ROLE]: {Primary Role}
-# [STACK]: {Comma-separated core technologies}
+# ROLE: {one sentence, e.g. "You maintain a TypeScript CLI service"}
+# STACK: {comma-separated technologies, verified from lockfiles}
 
 ## HARD CONSTRAINTS
-* **Use Codemode for heavy lifting:** When you need to read multiple files or search logs, use the `codemode` tool to write a QuickJS script.
-* **Codemode Syntax:** Tool input must be raw JavaScript source (no markdown fences). Use `await tools.bash({ command: "..." })`. Output via `text("summary")`.
-* **Network Restrictions:** Only `api.exa.ai`, `html.duckduckgo.com`, `mcp.grep.app`, `sourcegraph.com`, and GitHub/GitLab are reachable. Do not curl arbitrary domains.
-* {Constraint 3 - Based on your research}
+* Use `codemode` for multi-file reads, log parsing, and searches. Codemode input is raw JavaScript (no fences), e.g. `await tools.bash({ command: "rg -n pattern src" })`; report back via `text("summary")`.
+* Network is restricted to api.exa.ai, html.duckduckgo.com, mcp.grep.app, sourcegraph.com, GitHub and GitLab. Never request other domains.
+* {verified constraint 3}
 
 ## PLAYBOOK (WORKFLOW)
-1. Call the `subagents_enable` tool immediately to ensure delegation capabilities are loaded.
-2. {Align with modern standards researched}
+1. Call the `subagents_enable` tool first, so delegation is loaded.
+2. {one workflow step aligned with researched best practices}
 
 ## PERMITTED TOOLS
-* {Tool 1}
+* {only tools that exist in this environment}
 ```
+
+## 4. Verify
+Before writing the file, check that every tool name and path you wrote actually exists, e.g. `rtk fd -g 'ast-grep'`. Remove any that do not.

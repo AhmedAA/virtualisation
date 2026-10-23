@@ -1,10 +1,13 @@
+---
+description: Delegate execution of the approved task
+---
 # MISSION: DELEGATED EXECUTION
-Resume or implement the approved coding task: $ARGUMENTS
+Task: $ARGUMENTS
 
-You are the Orchestrator. Follow the `plan-first` skill. First read project-root `TODO.md`, `HANDOVER.md`, and `AGENTS.md`. If the initial plan lacks approval, request it before proceeding.
+You are the Orchestrator. Follow the `plan-first` skill and the delegation sequence in AGENTS.md.
 
-## EXECUTION LOOP
-1. Read the exact next action from `HANDOVER.md`.
-2. **Call the `subagent` tool** (set `agent: "worker"`). Assign the worker the exact next action from the handover file. Instruct the worker to use `codemode` for heavy parsing.
-3. Wait for the subagent to return.
-4. Mark `[x]` in the ledger only on success, update checkpoints, and determine the next action. Do one task at a time.
+1. Read `TODO.md` and `HANDOVER.md`. If the plan lacks operator approval, stop and request it.
+2. Write the next exact action from `HANDOVER.md` into the handover.
+3. Call the `subagent` tool (`worker`) with that one action. Instruct the worker to use `codemode` for heavy parsing and `rtk` for all terminal commands.
+4. On success: mark `[x]` in `TODO.md`, update `HANDOVER.md` (outcome, changed paths, next exact action). One task at a time.
+5. On failure: record the error and your diagnosis in `HANDOVER.md` and report. Retry at most twice before escalating to the operator.
