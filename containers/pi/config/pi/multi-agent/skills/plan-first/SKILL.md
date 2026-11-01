@@ -15,7 +15,7 @@ Use for every new feature, bug fix, refactor, or implementation. Project-root `T
 
 ## 2. Delegate One Task at a Time
 1. Before starting a task, write its intended action to `HANDOVER.md`.
-2. Call the `subagent` tool (typically `worker`) with that task only.
+2. Call the `subagent` tool (typically `worker`) with a complete brief per AGENTS.md section 3: Environment, Task, Already ruled out, Return. One task only.
 3. On success: mark `[x]` in `TODO.md`; update `HANDOVER.md` with the outcome, changed paths, and next exact action. Ask approval before expanding the goal.
 
 ## 3. Checkpoint on Every Boundary

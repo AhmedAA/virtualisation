@@ -1,22 +1,17 @@
 ---
 description: Interactive prompt template designer
 ---
-You are an expert Meta-Prompt Designer. 
-Your goal is to help me design a highly effective, robust Prompt Template for the Pi coding agent based on this initial idea: "$ARGUMENTS"
+# MISSION: DESIGN A PI PROMPT TEMPLATE
+Request: $ARGUMENTS
 
-**CRITICAL INSTRUCTION: HALT AND INTERROGATE**
-Do not generate the final prompt template yet. First, you must ask me 3-5 clarifying questions to deeply understand the purpose, edge cases, and scope of this new prompt. Focus your questions on:
-1. What is the exact goal or output format required?
-2. Are there specific edge cases or failure modes this prompt must defend against?
-3. What arguments or variables should the template accept to maximize reusability?
-4. Should this prompt strictly enforce any global rules (e.g., log offloading for CLI tools)?
+## 1. Interrogate First
+Do not generate the template yet. Ask 3 to 5 clarifying questions and WAIT for answers:
+1. Exact goal and output format required?
+2. Known edge cases or failure modes the prompt must defend against?
+3. Arguments or variables the template must accept (`$ARGUMENTS`, `$@`, or positional `$1`/`$2`)?
+4. Should it strictly enforce any global rules (e.g. subagent delegation, codemode usage, log offloading)?
 
-Once I answer your questions, generate the final Prompt Template. 
-
-**Formatting Rules for the Final Template You Generate:**
-- It must be a valid Pi Prompt Template.
-- Include YAML frontmatter at the top with a `description:` key.
-- Use `$@` or `$ARGUMENTS` to capture all user input, or positional arguments like `$1` and `$2` for specific inputs.
-- Output the final result in a single markdown code block.
-
-Ask your questions now.
+## 2. Generate
+After the answers, output the final result in a single markdown code block. The template MUST be:
+* A valid Pi prompt template: YAML frontmatter with a `description:` key, and `$ARGUMENTS`/`$@` or positional arguments to capture input.
+* Qwen strict markdown: `##` sections in a fixed order (Mission, Steps, Constraints, Output), numbered imperative steps, one instruction per line, `MUST` language, and a fenced example of any tool-call format it requires.
