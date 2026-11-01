@@ -74,8 +74,12 @@ RUN /bin/zsh -c "source /home/pi/.oh-my-zsh/custom/plugins/zsh-nvm/zsh-nvm.plugi
     "
 
 COPY --chown=pi:pi /config/shell/zshrc .zshrc
-COPY --chown=pi:pi /config/pi/agent .pi/agent
 COPY --chown=pi:pi /config/nono/profiles/pi.json .config/nono/profiles/pi.json
+COPY --chown=pi:pi /config/pi/multi-agent .pi/agent
+COPY --chown=pi:pi /config/pi/extensions .pi/agent/extensions
+COPY --chown=pi:pi /config/pi/themes .pi/agent/themes
+COPY --chown=pi:pi /config/pi/models.json .pi/agent/models.json
+COPY --chown=pi:pi /config/pi/settings.json .pi/agent/settings.json
 
 USER pi
 RUN /bin/zsh -c "\
