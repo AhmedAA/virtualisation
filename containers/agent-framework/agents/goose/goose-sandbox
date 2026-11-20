@@ -1,0 +1,9 @@
+#!/bin/sh
+# Profile-specific environment is loaded outside nono, before entering the sandbox.
+set -eu
+. "$HOME/.config/goose/model.sh"
+# Local loopback endpoints must bypass a host-inherited HTTP proxy.
+case "$OPENAI_HOST" in
+  http://127.0.0.1:*) unset NO_PROXY no_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY http_proxy https_proxy all_proxy ;;
+esac
+exec nono run --profile goose -- goose "$@"

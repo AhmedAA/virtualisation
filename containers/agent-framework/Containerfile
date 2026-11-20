@@ -1,0 +1,181 @@
+# Build one agent at a time: --target pi, --target opencode, or --target goose.
+FROM debian:testing-slim AS base
+
+ENV TZ=Europe/Copenhagen
+ENV HOME=/home/agent
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        adduser atool bat ca-certificates curl eza fd-find fzf git gpg \
+        httpie nano ranger ripgrep starship sudo tar unzip ueberzug wget \
+        zoxide zsh && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN adduser --disabled-password --gecos '' agent && \
+    adduser agent sudo && \
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+RUN set -eu; \
+    version="$(curl -fsSIL https://github.com/nolabs-ai/nono/releases/latest | \
+        grep -i location | grep -oP 'v\K[0-9a-zA-Z.-]+' | tail -1)"; \
+    arch="$(dpkg --print-architecture)"; \
+    wget -q "https://github.com/nolabs-ai/nono/releases/download/v${version}/nono-cli_${version}_${arch}.deb" \
+        -O /tmp/nono.deb; \
+    dpkg -i /tmp/nono.deb; \
+    rm /tmp/nono.deb
+
+USER agent
+WORKDIR /home/agent
+
+RUN set -eu; \
+    curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh \
+        -o /tmp/zsh-install.sh; \
+    sh /tmp/zsh-install.sh --unattended; \
+    rm /tmp/zsh-install.sh; \
+    mkdir -p "$HOME/.oh-my-zsh/custom/plugins"; \
+    for plugin in zsh-autosuggestions zsh-syntax-highlighting zsh-completions; do \
+        git clone --depth 1 "https://github.com/zsh-users/$plugin" \
+            "$HOME/.oh-my-zsh/custom/plugins/$plugin"; \
+    done; \
+    git clone --depth 1 https://github.com/lukechilds/zsh-nvm \
+        "$HOME/.oh-my-zsh/custom/plugins/zsh-nvm"; \
+    find "$HOME/.oh-my-zsh" -type d -name .git -prune -exec rm -rf {} +; \
+    curl -fsSL https://sh.rustup.rs -o /tmp/rustup.sh; \
+    sh /tmp/rustup.sh -y; \
+    rm /tmp/rustup.sh; \
+    curl -fsSL https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh \
+        -o /tmp/cargo-binstall.sh; \
+    sh /tmp/cargo-binstall.sh; \
+    rm /tmp/cargo-binstall.sh; \
+    "$HOME/.cargo/bin/cargo-binstall" -y zellij; \
+    "$HOME/.cargo/bin/cargo-binstall" -y --git https://github.com/rtk-ai/rtk rtk; \
+    rm -rf "$HOME/.cargo/registry" "$HOME/.cargo/git" \
+        "$HOME/.rustup/downloads" "$HOME/.rustup/tmp" "$HOME/.cache"
+
+COPY --chown=agent:agent config/build/install-node-tools.zsh /tmp/install-node-tools.zsh
+RUN /bin/zsh /tmp/install-node-tools.zsh && rm /tmp/install-node-tools.zsh
+COPY --chown=agent:agent config/shell/zshrc /home/agent/.zshrc
+
+# Assemble selected Pi configuration away from the final image.
+FROM base AS pi-config
+ARG PI_MODELS=local
+ARG PI_WORKFLOW=multi-agent
+
+COPY --chown=agent:agent agents/pi/config/multi-agent /opt/pi/multi-agent
+COPY --chown=agent:agent agents/pi/config/single-agent /opt/pi/single-agent
+COPY --chown=agent:agent agents/pi/models /opt/pi/models
+COPY --chown=agent:agent agents/pi/nono /opt/pi/nono
+COPY --chown=agent:agent agents/pi/config/settings.json /opt/pi/settings.json
+COPY --chown=agent:agent agents/pi/config/themes /opt/pi/themes
+# Generated bundles only; extension development sources remain in the repository.
+COPY --chown=agent:agent \
+    agents/pi/config/extensions/pi-file-viewer/index.ts \
+    agents/pi/config/extensions/pi-file-viewer/viewer.mjs \
+    agents/pi/config/extensions/pi-file-viewer/viewer.d.mts \
+    /opt/pi/extensions/pi-file-viewer/
+
+RUN set -eu; \
+    case "$PI_MODELS" in \
+        local|marketplace) ;; \
+        *) echo "Invalid PI_MODELS: $PI_MODELS" >&2; exit 1 ;; \
+    esac; \
+    case "$PI_WORKFLOW" in \
+        single-agent|multi-agent) ;; \
+        *) echo "Invalid PI_WORKFLOW: $PI_WORKFLOW" >&2; exit 1 ;; \
+    esac; \
+    mkdir -p "$HOME/.pi/agent" "$HOME/.config/nono/profiles"; \
+    cp -R "/opt/pi/$PI_WORKFLOW/." "$HOME/.pi/agent/"; \
+    cp -R /opt/pi/extensions /opt/pi/themes "$HOME/.pi/agent/"; \
+    cp /opt/pi/settings.json "$HOME/.pi/agent/settings.json"; \
+    cp "/opt/pi/models/$PI_MODELS.json" "$HOME/.pi/agent/models.json"; \
+    cp "/opt/pi/nono/$PI_MODELS.json" "$HOME/.config/nono/profiles/pi.json"
+
+FROM base AS pi
+ARG PI_WORKFLOW=multi-agent
+
+COPY --chown=agent:agent agents/pi/install.zsh /tmp/install-pi.zsh
+RUN /bin/zsh /tmp/install-pi.zsh && rm /tmp/install-pi.zsh
+COPY --chown=agent:agent --from=pi-config \
+    /home/agent/.pi/agent /home/agent/.pi/agent
+COPY --chown=agent:agent --from=pi-config \
+    /home/agent/.config/nono/profiles/pi.json \
+    /home/agent/.config/nono/profiles/pi.json
+COPY --chown=agent:agent agents/pi/setup.zsh /tmp/setup-pi.zsh
+RUN /bin/zsh /tmp/setup-pi.zsh && rm /tmp/setup-pi.zsh
+ENTRYPOINT ["/bin/zsh"]
+
+# Build-time selection keeps the other provider and sandbox policy out of the image.
+FROM base AS opencode-config
+ARG OPENCODE_MODELS=marketplace
+
+COPY --chown=agent:agent agents/opencode/config /opt/opencode/config
+COPY --chown=agent:agent agents/opencode/nono /opt/opencode/nono
+COPY --chown=agent:agent agents/opencode/models /opt/opencode/models
+
+RUN set -eu; \
+    case "$OPENCODE_MODELS" in \
+        local|marketplace) ;; \
+        *) echo "Invalid OPENCODE_MODELS: $OPENCODE_MODELS" >&2; exit 1 ;; \
+    esac; \
+    mkdir -p "$HOME/.config/opencode" "$HOME/.config/nono/profiles"; \
+    cp "/opt/opencode/config/$OPENCODE_MODELS.json" \
+        "$HOME/.config/opencode/opencode.json"; \
+    cp "/opt/opencode/nono/$OPENCODE_MODELS.json" \
+        "$HOME/.config/nono/profiles/opencode.json"; \
+    cp "/opt/opencode/models/$OPENCODE_MODELS.sh" \
+        "$HOME/.config/opencode/model.sh"
+
+FROM base AS opencode
+
+COPY --chown=agent:agent agents/opencode/install.zsh /tmp/install-opencode.zsh
+RUN /bin/zsh /tmp/install-opencode.zsh && rm /tmp/install-opencode.zsh
+COPY --chown=agent:agent --from=opencode-config \
+    /home/agent/.config/opencode /home/agent/.config/opencode
+COPY --chown=agent:agent --from=opencode-config \
+    /home/agent/.config/nono/profiles/opencode.json \
+    /home/agent/.config/nono/profiles/opencode.json
+COPY --chown=agent:agent --chmod=755 \
+    agents/opencode/opencode-sandbox /home/agent/.local/bin/opencode-sandbox
+COPY --chown=agent:agent agents/opencode/setup.zsh /tmp/setup-opencode.zsh
+RUN /bin/zsh /tmp/setup-opencode.zsh && rm /tmp/setup-opencode.zsh
+ENTRYPOINT ["/bin/zsh"]
+
+# Goose's alternate model configuration stays in this intermediate stage.
+FROM base AS goose-config
+ARG GOOSE_MODELS=local
+
+COPY --chown=agent:agent agents/goose/models /opt/goose/models
+COPY --chown=agent:agent agents/goose/nono /opt/goose/nono
+RUN set -eu; \
+    case "$GOOSE_MODELS" in \
+        local|marketplace) ;; \
+        *) echo "Invalid GOOSE_MODELS: $GOOSE_MODELS" >&2; exit 1 ;; \
+    esac; \
+    mkdir -p "$HOME/.config/goose" "$HOME/.config/nono/profiles"; \
+    cp "/opt/goose/models/$GOOSE_MODELS.sh" "$HOME/.config/goose/model.sh"; \
+    cp "/opt/goose/nono/$GOOSE_MODELS.json" \
+        "$HOME/.config/nono/profiles/goose.json"
+
+FROM base AS goose
+ARG GOOSE_VERSION=
+
+RUN set -eu; \
+    curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh \
+        -o /tmp/goose-install.sh; \
+    CONFIGURE=false GOOSE_VERSION="$GOOSE_VERSION" \
+        GOOSE_BIN_DIR="$HOME/.local/bin" bash /tmp/goose-install.sh; \
+    rm /tmp/goose-install.sh; \
+    "$HOME/.local/bin/goose" --version; \
+    rm -rf "$HOME/.cache" "$HOME/.local/share/goose/downloads"
+COPY --chown=agent:agent --from=goose-config \
+    /home/agent/.config/goose/model.sh /home/agent/.config/goose/model.sh
+COPY --chown=agent:agent --from=goose-config \
+    /home/agent/.config/nono/profiles/goose.json \
+    /home/agent/.config/nono/profiles/goose.json
+COPY --chown=agent:agent --chmod=755 \
+    agents/goose/goose-sandbox /home/agent/.local/bin/goose-sandbox
+RUN set -eu; \
+    rm -rf "$HOME/.cache" "$HOME/.npm/_cacache" \
+        "$HOME/.cargo/registry" "$HOME/.nvm/.cache" "$HOME/.zsh_history"; \
+    find "$HOME" -maxdepth 1 -name '.zcompdump*' -delete
+ENTRYPOINT ["/bin/zsh"]

@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+. "$HOME/.config/opencode/model.sh"
+
+# Host loopback model servers should not be sent through an inherited proxy.
+if [ "${LOCAL_MODEL_API_KEY:-}" = sk-dummy ]; then
+  unset NO_PROXY no_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
+  unset http_proxy https_proxy all_proxy
+fi
+
+exec nono run --profile opencode -- opencode --standalone "$@"

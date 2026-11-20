@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "name": "goose"
+  },
+  "filesystem": {
+    "allow": [
+      "~/.config/goose",
+      "~/.local/share/goose",
+      "~/.local/state/goose"
+    ],
+    "read": [
+      "~/.cargo/bin/rtk",
+      "~/.nvm/versions/node"
+    ]
+  },
+  "network": {
+    "block": false,
+    "allow_http2": false,
+    "allow_domain": [
+      "127.0.0.1"
+    ],
+    "connect_port": [
+      11434,
+      80,
+      443
+    ],
+    "no_proxy": []
+  },
+  "workdir": {
+    "access": "readwrite"
+  }
+}

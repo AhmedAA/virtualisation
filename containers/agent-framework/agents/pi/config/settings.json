@@ -1,0 +1,12 @@
+{
+  "theme": "catppuccin-macchiato",
+  "defaultTools": [
+    "+codemode"
+  ],
+  "maxSubagentSpawnsPerRun": 5,
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 8192,
+    "keepRecentTokens": 8192
+  }
+}
