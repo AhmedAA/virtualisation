@@ -11,9 +11,15 @@ Use for every new feature, bug fix, refactor, or implementation. Project-root `T
 1. Read `AGENTS.md` if present, then project structure, metadata/dependencies, build/test scripts, README, and existing `TODO.md` and `HANDOVER.md`.
 2. On resumption, read both checkpoints BEFORE researching or coding. Trust them as a starting point, but check relevant files and verification results. Do not redo recorded research without a reason.
 3. For a new request, ask up to five blocking questions in one round and WAIT for answers.
-4. Create or update `TODO.md`: one-sentence goal, small ordered verifiable `- [ ]` tasks, constraints/decisions.
-5. Create or update `HANDOVER.md`: approval status, current state, key findings/paths, outstanding checks, next exact action.
-6. Show the plan: "Reply YES to start, or tell me what to change." WAIT for explicit approval; record it in `HANDOVER.md` before implementing. On revisions, update both files and request approval again.
+4. Create or update `TODO.md`: one-sentence goal, ordered `- [ ]` tasks, constraints/decisions. Every task MUST be ATOMIC:
+   * Touches a maximum of ONE file.
+   * Requires ONE type of action only (Read, Create, Modify, or Test).
+   * Names the exact file path and the specific success criteria.
+   A task that cannot obey these rules (e.g. a rename across a package, a test importing several files) MUST be split, or marked `MULTI:` with the reason and the list of files it touches. Never bundle "set up X and Y" into one task.
+   If the plan exceeds ten tasks, write it in batches of ten: show each batch to the operator and WAIT for a go-ahead before writing the next batch.
+5. The planning pass writes NO code. Plans, file paths, and success criteria only.
+6. Create or update `HANDOVER.md`: approval status, current state, key findings/paths, outstanding checks, next exact action.
+7. Show the plan: "Reply YES to start, or tell me what to change." WAIT for explicit approval; record it in `HANDOVER.md` before implementing. On revisions, update both files and request approval again.
 
 ## 2. Execute One Task at a Time
 1. Before starting a task, write its identity, intended action, and verification to `HANDOVER.md`.
